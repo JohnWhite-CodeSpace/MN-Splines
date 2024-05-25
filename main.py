@@ -1,17 +1,17 @@
+import os
 import sys
-import matplotlib
-from matplotlib import pyplot as plt
-from PyQt5.QtGui import QFont
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+from datetime import datetime
+
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import QEvent
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import numpy as np
-import scipy as scp
-from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QApplication, \
-    QStyleFactory, QTextEdit, QWidget, QPushButton, QTableWidget, QAction, QTableWidgetItem, QMenu, QFileDialog
+    QStyleFactory, QTextEdit, QWidget, QTableWidget, QAction, QTableWidgetItem, QMenu, QFileDialog
 from data_loader import SpreadsheetLoader as SL
 from plot_canvas import MplCanvas3D2D
 from plotter import PlotHandler as PH
+import console_handler as chand
 
 
 class main_frame(QMainWindow):
@@ -27,6 +27,8 @@ class main_frame(QMainWindow):
         self.x_array = []
         self.y_array = []
         self.z_array = []
+        self.console_handler = chand.Console_handler(self)
+        self.savedpath = ''
         self.init_UI()
 
     def init_UI(self):
@@ -38,7 +40,6 @@ class main_frame(QMainWindow):
         self.setCentralWidget(central_widget)
         vbox_central = QVBoxLayout(central_widget)
         hbox_splitter = QHBoxLayout()
-        hbox_bottom = QHBoxLayout()
 
         spredsheet_frame = QFrame()
         spredsheet_frame.setFrameShape(QFrame.StyledPanel)
@@ -83,7 +84,7 @@ class main_frame(QMainWindow):
         scipy_label = QLabel("Scipy terminal:")
         self.scipy_terminal = QTextEdit()
 
-        main_label = QLabel("Main Terminal")
+        main_label = QLabel("Console")
         self.main_terminal = QTextEdit()
 
         terminal1_layout.addWidget(my_term_label)
@@ -131,12 +132,15 @@ class main_frame(QMainWindow):
         self.create_menu_bar()
         self.setWindowTitle('Python spline comparator - MN project')
         QApplication.setStyle(QStyleFactory.create('Cleanlooks'))
+        self.main_terminal.installEventFilter(self)
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('File')
         save_action = QAction('Save', self)
         saveas_action = QAction('Save As', self)
+        saveas_action.triggered.connect(self.save_as)
+        save_action.triggered.connect(self.save)
         load_action = QAction('Load Data', self)
 
         close_action = QAction('Close', self)
@@ -181,17 +185,17 @@ class main_frame(QMainWindow):
         clear_terminal1 = QAction('Clear "Numerical methods" terminal', self)
         clear_terminal2 = QAction('Clear "numpy" terminal', self)
         clear_terminal3 = QAction('Clear "scipy" terminal', self)
-        clear_main_terminal = QAction("Clear main terminal", self)
+        clear_console = QAction("Clear console", self)
         clear_all = QAction('Clear all terminals')
         clear_terminal1.triggered.connect(self.clear_t1)
         clear_terminal2.triggered.connect(self.clear_t2)
         clear_terminal3.triggered.connect(self.clear_t3)
-        clear_main_terminal.triggered.connect(self.clear_main)
+        clear_console.triggered.connect(self.clear_console)
         clear_all.triggered.connect(self.clear_all)
         clear_terminals.addAction(clear_terminal1)
         clear_terminals.addAction(clear_terminal2)
         clear_terminals.addAction(clear_terminal3)
-        clear_terminals.addAction(clear_main_terminal)
+        clear_terminals.addAction(clear_console)
         clear_terminals.addAction(clear_all)
         clear_plots = settings_menu.addMenu('Clear plot...')
         clear_mn = QAction('Clear main plot', self)
@@ -409,7 +413,7 @@ class main_frame(QMainWindow):
     def clear_t3(self):
         self.scipy_terminal.clear()
 
-    def clear_main(self):
+    def clear_console(self):
         self.main_terminal.clear()
 
     def clear_all(self):
@@ -418,9 +422,43 @@ class main_frame(QMainWindow):
         self.clear_t3()
         self.main_terminal.clear()
 
-    # def Save(self):
-    #
-    # def SaveAs(self):
+    def save_as(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        self.savedpath = file
+        if file:
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            MN_filename = os.path.join(file, f"MN_{timestamp}.png")
+            Numpy_filename = os.path.join(file, f"Numpy_{timestamp}.png")
+            Scipy_filename = os.path.join(file, f"Scipy_{timestamp}.png")
+            self.plot_frame_1.figure.savefig(MN_filename)
+            self.plot_frame_2.figure.savefig(Numpy_filename)
+            self.plot_frame_3.figure.savefig(Scipy_filename)
+            self.main_terminal.append(f"Numerical Method plot saved to {MN_filename}")
+            self.main_terminal.append(f"Numpy plot saved to {Numpy_filename}")
+            self.main_terminal.append(f"Scipy plot saved to {Scipy_filename}")
+
+    def save(self):
+        if self.savedpath:
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            MN_filename = os.path.join(self.savedpath, f"MN_{timestamp}.png")
+            Numpy_filename = os.path.join(self.savedpath, f"Numpy_{timestamp}.png")
+            Scipy_filename = os.path.join(self.savedpath, f"Scipy_{timestamp}.png")
+            self.plot_frame_1.figure.savefig(MN_filename)
+            self.plot_frame_2.figure.savefig(Numpy_filename)
+            self.plot_frame_3.figure.savefig(Scipy_filename)
+            self.main_terminal.append(f"Numerical Method plot saved to {MN_filename}")
+            self.main_terminal.append(f"Numpy plot saved to {Numpy_filename}")
+            self.main_terminal.append(f"Scipy plot saved to {Scipy_filename}")
+        else:
+            self.main_terminal.append("First choose directory for saved data... \n")
+            self.save_as()
+
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.KeyPress and event.key() == QtCore.Qt.Key_Return and source is self.main_terminal:
+            text_line = self.main_terminal.toPlainText()
+            self.console_handler.get_console_input(text_line)
+            return True
+        return super(main_frame, self).eventFilter(source, event)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
