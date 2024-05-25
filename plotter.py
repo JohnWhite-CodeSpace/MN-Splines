@@ -26,7 +26,7 @@ class PlotHandler:
         y_line = interpolator(x_line)
         return x_line, y_line
 
-    def manual_interpolation_linear(self, x_array, y_array):
+    def manual_interpolation_linear2d(self, x_array, y_array):
         x_line = []
         y_line = []
         n = len(x_array)
@@ -46,7 +46,7 @@ class PlotHandler:
         y_line.append(y_array[-1])
         return x_line, y_line
 
-    def numpy_square_spline(self, x_array, y_array, num_points):
+    def numpy_square_spline2d(self, x_array, y_array, num_points):
         n = len(x_array)
         A = []
         B = []
@@ -80,13 +80,13 @@ class PlotHandler:
 
         return x_spline, y_spline
 
-    def scipy_square_spline(self, x_array, y_array):
+    def scipy_square_spline2d(self, x_array, y_array):
         sqrt_spline = splrep(x_array, y_array, k=2)
         x_spline = np.linspace(min(x_array), max(x_array), 100)
         y_spline = splev(x_spline, sqrt_spline)
         return x_spline, y_spline
 
-    def numpy_qubic_spline(self, x_array, y_array, num_points):
+    def numpy_qubic_spline2d(self, x_array, y_array, num_points):
         n = len(x_array)
         A = []
         B = []
@@ -135,13 +135,13 @@ class PlotHandler:
 
         return x_spline, y_spline
 
-    def scipy_qubic_spline(self, x_array, y_array):
+    def scipy_qubic_spline2d(self, x_array, y_array):
         qube_spline = splrep(x_array, y_array, k=3)
         x_spline = np.linspace(min(x_array), max(x_array), 100)
         y_spline = splev(x_spline, qube_spline)
         return x_spline, y_spline
 
-    def manual_square_spline(self, x_array, y_array):
+    def manual_square_spline2d(self, x_array, y_array):
         n = len(x_array)
         A = []
         B = []
@@ -165,7 +165,7 @@ class PlotHandler:
         x = self.gaussian_elimination(A, B)
         return x
 
-    def manual_qubic_spline(self, x_array, y_array):
+    def manual_qubic_spline2d(self, x_array, y_array):
         n = len(x_array)
         A = []
         B = []

@@ -8,7 +8,7 @@ import numpy as np
 import scipy as scp
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QApplication, \
-    QStyleFactory, QTextEdit, QWidget, QPushButton, QTableWidget, QAction, QTableWidgetItem, QMenu
+    QStyleFactory, QTextEdit, QWidget, QPushButton, QTableWidget, QAction, QTableWidgetItem, QMenu, QFileDialog
 from data_loader import SpreadsheetLoader as SL
 from plot_canvas import MplCanvas3D2D
 from plotter import PlotHandler as PH
@@ -70,10 +70,11 @@ class main_frame(QMainWindow):
         terminal1_layout = QVBoxLayout()
         terminal2_layout = QVBoxLayout()
         terminal3_layout = QVBoxLayout()
+        main_terminal_layout = QVBoxLayout()
 
         terminal_layout = QHBoxLayout()
 
-        my_term_label = QLabel("Main terminal:")
+        my_term_label = QLabel("Numerical Method terminal:")
         self.my_terminal = QTextEdit()
 
         numpy_label = QLabel("Numpy terminal:")
@@ -81,6 +82,9 @@ class main_frame(QMainWindow):
 
         scipy_label = QLabel("Scipy terminal:")
         self.scipy_terminal = QTextEdit()
+
+        main_label = QLabel("Main Terminal")
+        self.main_terminal = QTextEdit()
 
         terminal1_layout.addWidget(my_term_label)
         terminal1_layout.addWidget(self.my_terminal)
@@ -91,13 +95,17 @@ class main_frame(QMainWindow):
         terminal3_layout.addWidget(scipy_label)
         terminal3_layout.addWidget(self.scipy_terminal)
 
+        main_terminal_layout.addWidget(main_label)
+        main_terminal_layout.addWidget(self.main_terminal)
+
         terminal_layout.addLayout(terminal1_layout)
         terminal_layout.addLayout(terminal2_layout)
         terminal_layout.addLayout(terminal3_layout)
 
         Vplot_layout = QVBoxLayout()
         Vplot_layout.addLayout(plot_layout, 70)
-        Vplot_layout.addLayout(terminal_layout, 30)
+        Vplot_layout.addLayout(terminal_layout, 12)
+        Vplot_layout.addLayout(main_terminal_layout, 18)
 
         plot_frame.setLayout(Vplot_layout)
 
@@ -108,15 +116,11 @@ class main_frame(QMainWindow):
         hbox_splitter.addWidget(splitter)
 
         vbox_central.addLayout(hbox_splitter)
-
-        # Create a spreadsheet widget
         self.spreadsheet = QTableWidget(20, 3)
         for i in range(3):
             for j in range(3):
                 item = QTableWidgetItem()
                 self.spreadsheet.setItem(i, j, item)
-
-        # Add the spreadsheet to the layout
         spredsheet_layout = QVBoxLayout()
         spredsheet_layout.addWidget(QLabel("Data spreadsheet:"))
         spredsheet_layout.addWidget(self.spreadsheet)
@@ -159,11 +163,78 @@ class main_frame(QMainWindow):
         analysis.addAction(square_spline)
         analysis.addAction(qubic_spline)
         plot_menu.addMenu(analysis)
+        settings_menu = menu_bar.addMenu('View')
+        theme_menu = settings_menu.addMenu('Themes')
+        dark_theme = QAction('Dark_theme', self)
+        dark_theme.triggered.connect(lambda : self.load_qt_stylesheet("Themes/dark_stylesheet.css"))
+        light_theme = QAction('Light theme', self)
+        light_theme.triggered.connect(lambda: self.load_qt_stylesheet("Themes/light_stylesheet.css"))
+        classic_theme = QAction('Classic Theme', self)
+        classic_theme.triggered.connect(lambda: self.load_qt_stylesheet("Themes/classic_stylesheet.css"))
+        external_theme = QAction('Load External Theme...', self)
+        external_theme.triggered.connect(self.load_external_qt_stylesheet)
+        theme_menu.addAction(dark_theme)
+        theme_menu.addAction(light_theme)
+        theme_menu.addAction(classic_theme)
+        theme_menu.addAction(external_theme)
+        clear_terminals = settings_menu.addMenu('Clear terminal...')
+        clear_terminal1 = QAction('Clear "Numerical methods" terminal', self)
+        clear_terminal2 = QAction('Clear "numpy" terminal', self)
+        clear_terminal3 = QAction('Clear "scipy" terminal', self)
+        clear_main_terminal = QAction("Clear main terminal", self)
+        clear_all = QAction('Clear all terminals')
+        clear_terminal1.triggered.connect(self.clear_t1)
+        clear_terminal2.triggered.connect(self.clear_t2)
+        clear_terminal3.triggered.connect(self.clear_t3)
+        clear_main_terminal.triggered.connect(self.clear_main)
+        clear_all.triggered.connect(self.clear_all)
+        clear_terminals.addAction(clear_terminal1)
+        clear_terminals.addAction(clear_terminal2)
+        clear_terminals.addAction(clear_terminal3)
+        clear_terminals.addAction(clear_main_terminal)
+        clear_terminals.addAction(clear_all)
+        clear_plots = settings_menu.addMenu('Clear plot...')
+        clear_mn = QAction('Clear main plot', self)
+        clear_numpy = QAction('Clear numpy plot', self)
+        clear_scipy = QAction('Clear scipy plot', self)
+        clear_all_plots = QAction('Clear all plots', self)
+        clear_mn.triggered.connect(self.plot_frame_1.clear)
+        clear_numpy.triggered.connect(self.plot_frame_2.clear)
+        clear_scipy.triggered.connect(self.plot_frame_3.clear)
+        clear_all_plots.triggered.connect(self.clear_all_plots)
+        clear_plots.addAction(clear_mn)
+        clear_plots.addAction(clear_numpy)
+        clear_plots.addAction(clear_scipy)
+        clear_plots.addAction(clear_all_plots)
         help_menu = menu_bar.addMenu('Help')
         manual = QAction('Manual', self)
         docs = QAction('Documentation', self)
         help_menu.addAction(manual)
         help_menu.addAction(docs)
+
+    def load_qt_stylesheet(self, stylesheet):
+        try:
+            with open(stylesheet, 'r', encoding='utf-8') as file:
+                style_str = file.read()
+            self.setStyleSheet(style_str)
+        except Exception as e:
+            self.main_terminal.append(f"Failed to load stylesheet: {e}")
+
+    def load_external_qt_stylesheet(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setNameFilter(self.tr("StyleSheets (*.qss *.css)"))
+        stylesheet, _ = dialog.getOpenFileName()
+        if stylesheet:
+            self.load_qt_stylesheet(stylesheet)
+        else:
+            self.append_text_main(f"Error: Cannot load theme {stylesheet}")
+
+    def clear_all_plots(self):
+        self.plot_frame_1.clear()
+        self.plot_frame_2.clear()
+        self.plot_frame_3.clear()
+        self.append_text_main('All plots cleared!')
 
     def init_scatter_plot(self):
         column_values = SL.read_spreadsheet(self)
@@ -181,7 +252,7 @@ class main_frame(QMainWindow):
         elif len(column_values) == 3:
             self.linear_plot3D()
         else:
-            self.append_all("Error: Issue occured while displaying data")
+            self.append_text_main("Error: Issue occurred while displaying data")
 
     def linear_plot2D(self):
         self.clear_all()
@@ -262,7 +333,7 @@ class main_frame(QMainWindow):
         axN = self.plot_frame_2.get_axis()
         axS = self.plot_frame_3.get_axis()
         axM = self.plot_frame_1.get_axis()
-        x_lineM, y_lineM = self.plotter.manual_interpolation_linear(self.x_array, self.y_array)
+        x_lineM, y_lineM = self.plotter.manual_interpolation_linear2d(self.x_array, self.y_array)
         axM.plot(x_lineM, y_lineM, color='orange')
         x_lineN, y_lineN = self.plotter.linear_fit_numpy2d(self.x_array, self.y_array)
         axN.plot(x_lineN, y_lineN, color='orange')
@@ -279,11 +350,11 @@ class main_frame(QMainWindow):
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
         self.y_array = column_values[1]
-        x_lineN, y_lineN = self.plotter.numpy_square_spline(self.x_array, self.y_array, 100)
+        x_lineN, y_lineN = self.plotter.numpy_square_spline2d(self.x_array, self.y_array, 100)
         axN.plot(x_lineN, y_lineN, color='orange')
-        x_lineS, y_lineS = self.plotter.scipy_square_spline(self.x_array, self.y_array)
+        x_lineS, y_lineS = self.plotter.scipy_square_spline2d(self.x_array, self.y_array)
         axS.plot(x_lineS, y_lineS, color='orange')
-        x = self.plotter.manual_square_spline(self.x_array, self.y_array)
+        x = self.plotter.manual_square_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 3):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[3 * i] * x_spline ** 2 + x[3 * i + 1] * x_spline + x[3 * i + 2]
@@ -299,12 +370,11 @@ class main_frame(QMainWindow):
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
         self.y_array = column_values[1]
-        print("testing numpy qubic")
-        x_lineN, y_lineN = self.plotter.numpy_qubic_spline(self.x_array, self.y_array, 100)
+        x_lineN, y_lineN = self.plotter.numpy_qubic_spline2d(self.x_array, self.y_array, 100)
         axN.plot(x_lineN, y_lineN, color='orange')
-        x_lineS, y_lineS = self.plotter.scipy_qubic_spline(self.x_array, self.y_array)
+        x_lineS, y_lineS = self.plotter.scipy_qubic_spline2d(self.x_array, self.y_array)
         axS.plot(x_lineS, y_lineS, color='orange')
-        x = self.plotter.manual_qubic_spline(self.x_array, self.y_array)
+        x = self.plotter.manual_qubic_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 4):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[4 * i] * x_spline ** 3 + x[4 * i + 1] * x_spline ** 2 + x[4 * i + 2] * x_spline + x[4 * i + 3]
@@ -322,6 +392,9 @@ class main_frame(QMainWindow):
     def append_text_t3(self, text):
         self.scipy_terminal.append(text)
 
+    def append_text_main(self, text):
+        self.main_terminal.append(text)
+
     def append_all(self, text):
         self.append_text_t1(text)
         self.append_text_t2(text)
@@ -336,11 +409,18 @@ class main_frame(QMainWindow):
     def clear_t3(self):
         self.scipy_terminal.clear()
 
+    def clear_main(self):
+        self.main_terminal.clear()
+
     def clear_all(self):
         self.clear_t1()
         self.clear_t2()
         self.clear_t3()
+        self.main_terminal.clear()
 
+    # def Save(self):
+    #
+    # def SaveAs(self):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
