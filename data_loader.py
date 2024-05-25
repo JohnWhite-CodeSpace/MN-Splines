@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog, QTableWidget, QTableWidgetItem
 
+
 class SpreadsheetLoader:
     def __init__(self, spreadsheet: QTableWidget):
         self.spreadsheet = spreadsheet
