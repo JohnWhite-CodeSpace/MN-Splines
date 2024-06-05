@@ -312,16 +312,18 @@ class main_frame(QMainWindow):
         """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
+        X_label = str(column_values[0][0])
+        Y_label = str(column_values[1][0])
         self.x_array = column_values[0]
         self.y_array = column_values[1]
         self.plot_frame_1.lineplot2D(self.x_array, self.y_array, 'x', 'y', 'blue', True)
         self.plot_frame_2.lineplot2D(self.x_array, self.y_array, 'x', 'y', 'red', True)
         self.plot_frame_3.lineplot2D(self.x_array, self.y_array, 'x', 'y', 'green', True)
         self.append_all("Displayed data: ")
-        self.append_all("X: ")
+        self.append_all(X_label)
         for i in self.x_array:
             self.append_all(str(i))
-        self.append_all("Y: ")
+        self.append_all(Y_label)
         for i in self.y_array:
             self.append_all(str(i))
 
@@ -354,16 +356,20 @@ class main_frame(QMainWindow):
         """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
-        self.x_array = column_values[0]
-        self.y_array = column_values[1]
-        self.plot_frame_1.scatterplot2D(self.x_array, self.y_array, 'x', 'y', 'blue', True)
-        self.plot_frame_2.scatterplot2D(self.x_array, self.y_array, 'x', 'y', 'red', True)
-        self.plot_frame_3.scatterplot2D(self.x_array, self.y_array, 'x', 'y', 'green', True)
+        X_label = str(column_values[0][0])
+        Y_label = str(column_values[1][0])
+        print(X_label)
+        print(Y_label)
+        self.x_array = column_values[0][1:]
+        self.y_array = column_values[1][1:]
+        self.plot_frame_1.scatterplot2D(self.x_array, self.y_array, X_label, Y_label, 'blue', True)
+        self.plot_frame_2.scatterplot2D(self.x_array, self.y_array, X_label, Y_label, 'red', True)
+        self.plot_frame_3.scatterplot2D(self.x_array, self.y_array, X_label, Y_label, 'green', True)
         self.append_all("Displayed data: ")
-        self.append_all("X: ")
+        self.append_all(X_label)
         for i in self.x_array:
             self.append_all(str(i))
-        self.append_all("Y: ")
+        self.append_all(Y_label)
         for i in self.y_array:
             self.append_all(str(i))
 
@@ -373,20 +379,23 @@ class main_frame(QMainWindow):
         """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
-        self.x_array = column_values[0]
-        self.y_array = column_values[1]
-        self.z_array = column_values[2]
-        self.plot_frame_1.scatterplot3D(self.x_array, self.y_array, self.z_array, 'x', 'y', 'z', 'blue', True)
-        self.plot_frame_2.scatterplot3D(self.x_array, self.y_array, self.z_array, 'x', 'y', 'z', 'red', True)
-        self.plot_frame_3.scatterplot3D(self.x_array, self.y_array, self.z_array, 'x', 'y', 'z', 'green', True)
+        X_label = str(column_values[0][0])
+        Y_label = str(column_values[1][0])
+        Z_label = str(column_values[2][0])
+        self.x_array = column_values[0][1:]
+        self.y_array = column_values[1][1:]
+        self.y_array = column_values[2][1:]
+        self.plot_frame_1.scatterplot3D(self.x_array, self.y_array, self.z_array, X_label, Y_label, Z_label, 'blue', True)
+        self.plot_frame_2.scatterplot3D(self.x_array, self.y_array, self.z_array, X_label, Y_label, Z_label, 'red', True)
+        self.plot_frame_3.scatterplot3D(self.x_array, self.y_array, self.z_array, X_label, Y_label, Z_label, 'green', True)
         self.append_all("Displayed data: ")
-        self.append_all("X: ")
+        self.append_all(X_label)
         for i in self.x_array:
             self.append_all(str(i))
-        self.append_all("Y: ")
+        self.append_all(Y_label)
         for i in self.y_array:
             self.append_all(str(i))
-        self.append_all("Z: ")
+        self.append_all(Z_label)
         for i in self.z_array:
             self.append_all(str(i))
 
@@ -418,17 +427,27 @@ class main_frame(QMainWindow):
         axS = self.plot_frame_3.get_axis()
         axM = self.plot_frame_1.get_axis()
         column_values = SL.read_spreadsheet(self)
-        self.x_array = column_values[0]
-        self.y_array = column_values[1]
+        self.x_array = column_values[0][1:]
+        self.y_array = column_values[1][1:]
         x_lineN, y_lineN = self.plotter.numpy_square_spline2d(self.x_array, self.y_array, 100)
-        axN.plot(x_lineN, y_lineN, color='cyan')
+        axN.plot(x_lineN, y_lineN, color='blue', label='Numpy Square Spline')
         x_lineS, y_lineS = self.plotter.scipy_square_spline2d(self.x_array, self.y_array)
-        axS.plot(x_lineS, y_lineS, color='cyan')
+        axS.plot(x_lineS, y_lineS, color='blue', label='Scipy Square Spline')
         x = self.plotter.manual_square_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 3):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[3 * i] * x_spline ** 2 + x[3 * i + 1] * x_spline + x[3 * i + 2]
-            axM.plot(x_spline, y_spline, color='cyan')
+            if i == len(x) // 3 -1:
+                axM.plot(x_spline, y_spline, color='blue', label="Manual Square Spline")
+            else:
+                axM.plot(x_spline, y_spline, color='blue')
+
+        axN.legend()
+        axS.legend()
+        axM.legend()
+        axN.set_title('Numpy Plot')
+        axS.set_title('Scipy Plot')
+        axM.set_title('My Plot')
         self.plot_frame_1.draw()
         self.plot_frame_2.draw()
         self.plot_frame_3.draw()
@@ -441,17 +460,26 @@ class main_frame(QMainWindow):
         axS = self.plot_frame_3.get_axis()
         axM = self.plot_frame_1.get_axis()
         column_values = SL.read_spreadsheet(self)
-        self.x_array = column_values[0]
-        self.y_array = column_values[1]
+        self.x_array = column_values[0][1:]
+        self.y_array = column_values[1][1:]
         x_lineN, y_lineN = self.plotter.numpy_qubic_spline2d(self.x_array, self.y_array, 100)
-        axN.plot(x_lineN, y_lineN, color='purple')
+        axN.plot(x_lineN, y_lineN, color='red', label='Numpy Square Spline')
         x_lineS, y_lineS = self.plotter.scipy_qubic_spline2d(self.x_array, self.y_array)
-        axS.plot(x_lineS, y_lineS, color='purple')
+        axS.plot(x_lineS, y_lineS, color='red', label='Scipy Cubic Spline')
         x = self.plotter.manual_qubic_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 4):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[4 * i] * x_spline ** 3 + x[4 * i + 1] * x_spline ** 2 + x[4 * i + 2] * x_spline + x[4 * i + 3]
-            axM.plot(x_spline, y_spline, color='purple')
+            if i==len(x)//4-1:
+                axM.plot(x_spline, y_spline, color='red', label="Manual Cubic Spline")
+            else:
+                axM.plot(x_spline, y_spline, color='red')
+        axN.legend()
+        axS.legend()
+        axM.legend()
+        axN.set_title('Numpy Plot')
+        axS.set_title('Scipy Plot')
+        axM.set_title('My Plot')
         self.plot_frame_1.draw()
         self.plot_frame_2.draw()
         self.plot_frame_3.draw()

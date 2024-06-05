@@ -33,7 +33,7 @@ class SpreadsheetLoader:
                 if item is not None:
                     try:
                         value = float(item.text())
-                        columns_data[j].append(value)
                     except ValueError:
-                        pass
+                        value = item.text()
+                    columns_data[j].append(value)
         return columns_data

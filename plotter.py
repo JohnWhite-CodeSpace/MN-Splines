@@ -11,7 +11,7 @@ class PlotHandler:
     """
     def __init__(self, plot_frame1: MplCanvas3D2D, plot_frame2: MplCanvas3D2D, plot_frame3: MplCanvas3D2D):
         """
-        Initialise PlotHandler object and set the MplCanvas3D2D objects.
+        Initialises PlotHandler object and sets the MplCanvas3D2D objects.
         :param plot_frame1:
         :param plot_frame2:
         :param plot_frame3:
@@ -77,7 +77,20 @@ class PlotHandler:
 
     def numpy_square_spline2d(self, x_array, y_array, num_points):
         """
-        Square spline interpolation method using methods offered by the numpy library.
+        Square spline interpolation method using method for performing calculations on matrices. the rest of
+        this algorithm was written based on the dr. Piotr Fronczak's 5th lecture of the Numerical Methods classes:
+
+        Conditions for creating a square spline:
+            1. **Interpolation Conditions:**
+                - Each quadratic polynomial P_i(x) = a_i x^2 + b_i x + c_i must pass through the endpoints (x_i, y_i) and (x_{i+1}, y_{i+1}).
+
+            2. **Smoothness Conditions:**
+               - The first derivatives of the polynomials must match at the internal points x_i:
+                 2a_i x_i + b_i = 2a_{i+1} x_i + b_{i+1} for i = 1, 2, ..., n-2.
+
+            3. **Boundary Condition:**
+               - The second derivative at the first point is set to zero: a_0 = 0.
+
         :param x_array: Array with x values of data loaded from spreadsheet
         :param y_array: Array with y values of data loaded from spreadsheet
         :return: x_line, y_line - Arrays with interpolated x and y values for later plotting
@@ -116,12 +129,36 @@ class PlotHandler:
         return x_spline, y_spline
 
     def scipy_square_spline2d(self, x_array, y_array):
+        """
+        Square spline interpolation method using methods offered by the scipy library.
+        :param x_array:
+        :param y_array:
+        :return: x_spline y_spline
+        """
         sqrt_spline = splrep(x_array, y_array, k=2)
         x_spline = np.linspace(min(x_array), max(x_array), 100)
         y_spline = splev(x_spline, sqrt_spline)
         return x_spline, y_spline
 
     def numpy_qubic_spline2d(self, x_array, y_array, num_points):
+        """
+        Cubic spline interpolation method using numpy method for performing calculations on matrices. the rest of
+        this algorithm was written based on the dr. Piotr Fronczak's 5th lecture of the Numerical Methods classes:
+        Conditions for creating a square spline:
+            1. **Interpolation Conditions:**
+                - Each quadratic polynomial P_i(x) = a_i x^2 + b_i x + c_i must pass through the endpoints (x_i, y_i) and (x_{i+1}, y_{i+1}).
+
+            2. **Smoothness Conditions:**
+               - The first derivatives of the polynomials must match at the internal points x_i:
+                 2a_i x_i + b_i = 2a_{i+1} x_i + b_{i+1} for i = 1, 2, ..., n-2.
+
+            3. **Boundary Condition:**
+               - The second derivative at the first point is set to zero: a_0 = 0.
+        :param x_array:
+        :param y_array:
+        :param num_points:
+        :return: x_spline y_spline
+        """
         n = len(x_array)
         A = []
         B = []
@@ -171,12 +208,40 @@ class PlotHandler:
         return x_spline, y_spline
 
     def scipy_qubic_spline2d(self, x_array, y_array):
+        """
+        Cubic spline interpolation method using methods offered by the scipy library.
+        :param x_array:
+        :param y_array:
+        :return: x_spline y_spline
+        """
         qube_spline = splrep(x_array, y_array, k=3)
         x_spline = np.linspace(min(x_array), max(x_array), 100)
         y_spline = splev(x_spline, qube_spline)
         return x_spline, y_spline
 
     def manual_square_spline2d(self, x_array, y_array):
+        """
+            Manually implemented method for square spline interpolation based on the algorithm described in Dr. Piotr
+            Fronczak's 5th lecture of Numerical Methods classes.
+
+            Conditions for creating a square spline:
+            1. **Interpolation Conditions:**
+               - Each quadratic polynomial P_i(x) = a_i x^2 + b_i x + c_i must pass through the endpoints (x_i, y_i) and (x_{i+1}, y_{i+1}).
+
+            2. **Smoothness Conditions:**
+               - The first derivatives of the polynomials must match at the internal points x_i:
+                 2a_i x_i + b_i = 2a_{i+1} x_i + b_{i+1} for i = 1, 2, ..., n-2.
+
+            3. **Boundary Condition:**
+               - The second derivative at the first point is set to zero: a_0 = 0.
+
+            The method constructs and solves a system of linear equations to determine the coefficients of the quadratic polynomials.
+
+            :param x_array: List of x-coordinates of the data points.
+            :param y_array: List of y-coordinates of the data points.
+            :return: List of coefficients for the quadratic polynomials, such that for each segment i, the coefficients
+                     [a_i, b_i, c_i] are in consecutive positions in the returned list.
+        """
         n = len(x_array)
         A = []
         B = []
@@ -201,6 +266,27 @@ class PlotHandler:
         return x
 
     def manual_qubic_spline2d(self, x_array, y_array):
+        """
+        Manually implemented method for cubic spline interpolation based on the algorithm described in Dr. Piotr
+        Fronczak's lectures on Numerical Methods.
+        Conditions for creating a cubic spline:
+        1. **Interpolation Conditions:**
+           - Each cubic polynomial P_i(x) = a_i x^3 + b_i x^2 + c_i x + d_i must pass through the endpoints (x_i, y_i) and (x_{i+1}, y_{i+1}).
+
+        2. **Smoothness Conditions:**
+           - The first derivatives of the polynomials must match at the internal points x_i:
+             3a_i x_i^2 + 2b_i x_i + c_i = 3a_{i+1} x_i^2 + 2b_{i+1} x_i + c_{i+1} for i = 1, 2, ..., n-2.
+           - The second derivatives of the polynomials must also match at the internal points x_i:
+             6a_i x_i + 2b_i = 6a_{i+1} x_i + 2b_{i+1} for i = 1, 2, ..., n-2.
+
+        3. **Boundary Conditions:**
+           - The second derivative at the first and last points are set to zero: 6a_0 x_0 + 2b_0 = 0 and 6a_{n-2} x_{n-1} + 2b_{n-2} = 0.
+        The method constructs and solves a system of linear equations to determine the coefficients of the cubic polynomials.
+        :param x_array: List of x-coordinates of the data points.
+        :param y_array: List of y-coordinates of the data points.
+        :return: List of coefficients for the cubic polynomials, such that for each segment i, the coefficients
+                 [a_i, b_i, c_i, d_i] are in consecutive positions in the returned list.
+        """
         n = len(x_array)
         A = []
         B = []
@@ -234,6 +320,17 @@ class PlotHandler:
         return x
 
     def gaussian_elimination(self, A, B):
+        """
+           Solves the system of linear equations Ax = B using Gaussian elimination.
+
+           The method performs partial pivoting to improve numerical stability (value less than 1e-10 can cause
+           computational problems like division by 0), and then applies forward elimination to transform the matrix A
+           into an upper triangular form. Back substitution is used to solve for the vector x.
+
+           :param A: Coefficient matrix of the system.
+           :param B: Right-hand side vector.
+           :return: Solution vector x.
+        """
         n = len(A)
         for i in range(n):
             max_index = i
