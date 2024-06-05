@@ -4,13 +4,29 @@ from plot_canvas import MplCanvas3D2D
 
 
 class PlotHandler:
-
+    """
+    A class which handles interpolation algorithms for each of three plots.
+    For the first plot all interpolation methods have been created without using external libraries such as "scipy" or
+    "numpy".
+    """
     def __init__(self, plot_frame1: MplCanvas3D2D, plot_frame2: MplCanvas3D2D, plot_frame3: MplCanvas3D2D):
+        """
+        Initialise PlotHandler object and set the MplCanvas3D2D objects.
+        :param plot_frame1:
+        :param plot_frame2:
+        :param plot_frame3:
+        """
         self.plot_frame1 = plot_frame1
         self.plot_frame2 = plot_frame2
         self.plot_frame3 = plot_frame3
 
     def linear_fit_numpy2d(self, x_array, y_array):
+        """
+        Linear interpolation method using methods offered by the numpy library
+        :param x_array: Array with x values of data loaded from spreadsheet
+        :param y_array: Array with y values of data loaded from spreadsheet
+        :return: x_line, y_line - Arrays with interpolated x and y values for later plotting
+        """
         x_array = np.array(x_array)
         y_array = np.array(y_array)
         sorted_indices = np.argsort(x_array)
@@ -21,12 +37,25 @@ class PlotHandler:
         return x_line, y_line
 
     def linear_fit_scipy2d(self, x_array, y_array):
+        """
+        Linear interpolation method using methods offered by the scipy library
+        :param x_array: Array with x values of data loaded from spreadsheet
+        :param y_array: Array with y values of data loaded from spreadsheet
+        :return: x_line, y_line - Arrays with interpolated x and y values for later plotting
+        """
         interpolator = interp1d(x_array, y_array, kind='linear')
         x_line = np.linspace(min(x_array), max(x_array), 100)
         y_line = interpolator(x_line)
         return x_line, y_line
 
     def manual_interpolation_linear2d(self, x_array, y_array):
+        """
+        My implementation of the linear interpolation without using any external methods.
+        This linear interpolation uses calculation fo the intermediate points for generating interpolated x and y values.
+        :param x_array: Array with x values of data loaded from spreadsheet.
+        :param y_array: Array with y values of data loaded from spreadsheet.
+        :return: x_line, y_line - Arrays with interpolated x and y values for later plotting.
+        """
         x_line = []
         y_line = []
         n = len(x_array)
@@ -47,6 +76,12 @@ class PlotHandler:
         return x_line, y_line
 
     def numpy_square_spline2d(self, x_array, y_array, num_points):
+        """
+        Square spline interpolation method using methods offered by the numpy library.
+        :param x_array: Array with x values of data loaded from spreadsheet
+        :param y_array: Array with y values of data loaded from spreadsheet
+        :return: x_line, y_line - Arrays with interpolated x and y values for later plotting
+        """
         n = len(x_array)
         A = []
         B = []

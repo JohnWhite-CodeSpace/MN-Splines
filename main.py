@@ -15,8 +15,14 @@ import console_handler as chand
 
 
 class main_frame(QMainWindow):
-
+    """
+    A mainframe class for initialising UI.
+    """
     def __init__(self):
+        """
+        Initialise main_frame object and set the default variables.
+
+        """
         super(main_frame, self).__init__()
         self.loader = None
         self.plotter = None
@@ -32,6 +38,9 @@ class main_frame(QMainWindow):
         self.init_UI()
 
     def init_UI(self):
+        """
+        Initialize the user interface components and layout for the main frame.
+        """
         self.plot_frame_1 = MplCanvas3D2D()
         self.plot_frame_2 = MplCanvas3D2D()
         self.plot_frame_3 = MplCanvas3D2D()
@@ -49,6 +58,11 @@ class main_frame(QMainWindow):
 
         plot_layout = QHBoxLayout()
 
+        subplot_splitter = QSplitter(QtCore.Qt.Horizontal)
+        plot_splitter1 = QSplitter(QtCore.Qt.Vertical)
+        plot_splitter2 = QSplitter(QtCore.Qt.Vertical)
+        plot_splitter3 = QSplitter(QtCore.Qt.Vertical)
+
         subplot_layout1 = QVBoxLayout()
         subplot_layout2 = QVBoxLayout()
         subplot_layout3 = QVBoxLayout()
@@ -64,9 +78,22 @@ class main_frame(QMainWindow):
         subplot_layout3.addWidget(toolbar3)
         subplot_layout3.addWidget(self.plot_frame_3)
 
-        plot_layout.addLayout(subplot_layout1)
-        plot_layout.addLayout(subplot_layout2)
-        plot_layout.addLayout(subplot_layout3)
+        plot_frame1_widget = QWidget()
+        plot_frame1_widget.setLayout(subplot_layout1)
+        plot_frame2_widget = QWidget()
+        plot_frame2_widget.setLayout(subplot_layout2)
+        plot_frame3_widget = QWidget()
+        plot_frame3_widget.setLayout(subplot_layout3)
+
+        plot_splitter1.addWidget(plot_frame1_widget)
+        plot_splitter2.addWidget(plot_frame2_widget)
+        plot_splitter3.addWidget(plot_frame3_widget)
+
+        subplot_splitter.addWidget(plot_splitter1)
+        subplot_splitter.addWidget(plot_splitter2)
+        subplot_splitter.addWidget(plot_splitter3)
+
+        plot_layout.addWidget(subplot_splitter)
 
         terminal1_layout = QVBoxLayout()
         terminal2_layout = QVBoxLayout()
@@ -135,6 +162,9 @@ class main_frame(QMainWindow):
         self.main_terminal.installEventFilter(self)
 
     def create_menu_bar(self):
+        """
+        Create the menu bar with file, plot, view, and help menus.
+        """
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('File')
         save_action = QAction('Save', self)
@@ -217,6 +247,12 @@ class main_frame(QMainWindow):
         help_menu.addAction(docs)
 
     def load_qt_stylesheet(self, stylesheet):
+        """
+        Load a Qt stylesheet from a file and apply it to the main frame.
+
+        Args:
+            stylesheet (str): Path to the stylesheet file.
+        """
         try:
             with open(stylesheet, 'r', encoding='utf-8') as file:
                 style_str = file.read()
@@ -225,6 +261,9 @@ class main_frame(QMainWindow):
             self.main_terminal.append(f"Failed to load stylesheet: {e}")
 
     def load_external_qt_stylesheet(self):
+        """
+        Load an external Qt stylesheet using a file dialog.
+        """
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.AnyFile)
         dialog.setNameFilter(self.tr("StyleSheets (*.qss *.css)"))
@@ -235,12 +274,18 @@ class main_frame(QMainWindow):
             self.append_text_main(f"Error: Cannot load theme {stylesheet}")
 
     def clear_all_plots(self):
+        """
+        Clear all plots displayed on the main frame.
+        """
         self.plot_frame_1.clear()
         self.plot_frame_2.clear()
         self.plot_frame_3.clear()
         self.append_text_main('All plots cleared!')
 
     def init_scatter_plot(self):
+        """
+        Initialize a scatter plot based on data in the spreadsheet.
+        """
         column_values = SL.read_spreadsheet(self)
         if len(column_values) == 2:
             self.scatter_plot2D()
@@ -250,6 +295,9 @@ class main_frame(QMainWindow):
             self.append_all("Error: Issue occurred while displaying data!")
 
     def init_linear_plot(self):
+        """
+        Initialize a linear plot based on data in the spreadsheet.
+        """
         column_values = SL.read_spreadsheet(self)
         if len(column_values) == 2:
             self.linear_plot2D()
@@ -259,6 +307,9 @@ class main_frame(QMainWindow):
             self.append_text_main("Error: Issue occurred while displaying data")
 
     def linear_plot2D(self):
+        """
+        Creates linear plots in 2D for each of three plot canvases.
+        """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
@@ -275,6 +326,9 @@ class main_frame(QMainWindow):
             self.append_all(str(i))
 
     def linear_plot3D(self):
+        """
+        Creates linear plots in 3D for each of three plot canvases.
+        """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
@@ -295,6 +349,9 @@ class main_frame(QMainWindow):
             self.append_all(str(i))
 
     def scatter_plot2D(self):
+        """
+        Creates scatter plots in 2D for each of three plot canvases.
+        """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
@@ -311,6 +368,9 @@ class main_frame(QMainWindow):
             self.append_all(str(i))
 
     def scatter_plot3D(self):
+        """
+        Creates scatter plots in 3D for each of three plot canvases.
+        """
         self.clear_all()
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
@@ -331,6 +391,9 @@ class main_frame(QMainWindow):
             self.append_all(str(i))
 
     def plot_Linear_fit2D(self):
+        """
+        Fits linear interpolation to data for each canvas based on three different linear interpolation methods (see plotter.py).
+        """
         column_values = SL.read_spreadsheet(self)
         self.x_array = column_values[0]
         self.y_array = column_values[1]
@@ -348,6 +411,9 @@ class main_frame(QMainWindow):
         self.plot_frame_3.draw()
 
     def plot_square_spline2D(self):
+        """
+        Fits squared spline to loaded data for each canvas based on three different square spline interpolation methods (see plotter.py).
+        """
         axN = self.plot_frame_2.get_axis()
         axS = self.plot_frame_3.get_axis()
         axM = self.plot_frame_1.get_axis()
@@ -355,19 +421,22 @@ class main_frame(QMainWindow):
         self.x_array = column_values[0]
         self.y_array = column_values[1]
         x_lineN, y_lineN = self.plotter.numpy_square_spline2d(self.x_array, self.y_array, 100)
-        axN.plot(x_lineN, y_lineN, color='orange')
+        axN.plot(x_lineN, y_lineN, color='cyan')
         x_lineS, y_lineS = self.plotter.scipy_square_spline2d(self.x_array, self.y_array)
-        axS.plot(x_lineS, y_lineS, color='orange')
+        axS.plot(x_lineS, y_lineS, color='cyan')
         x = self.plotter.manual_square_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 3):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[3 * i] * x_spline ** 2 + x[3 * i + 1] * x_spline + x[3 * i + 2]
-            axM.plot(x_spline, y_spline, color='orange')
+            axM.plot(x_spline, y_spline, color='cyan')
         self.plot_frame_1.draw()
         self.plot_frame_2.draw()
         self.plot_frame_3.draw()
 
     def plot_qubic_spline2D(self):
+        """
+        Fits cubic spline to loaded data for each canvas based on three different cubic spline interpolation methods (see plotter.py).
+        """
         axN = self.plot_frame_2.get_axis()
         axS = self.plot_frame_3.get_axis()
         axM = self.plot_frame_1.get_axis()
@@ -375,54 +444,92 @@ class main_frame(QMainWindow):
         self.x_array = column_values[0]
         self.y_array = column_values[1]
         x_lineN, y_lineN = self.plotter.numpy_qubic_spline2d(self.x_array, self.y_array, 100)
-        axN.plot(x_lineN, y_lineN, color='orange')
+        axN.plot(x_lineN, y_lineN, color='purple')
         x_lineS, y_lineS = self.plotter.scipy_qubic_spline2d(self.x_array, self.y_array)
-        axS.plot(x_lineS, y_lineS, color='orange')
+        axS.plot(x_lineS, y_lineS, color='purple')
         x = self.plotter.manual_qubic_spline2d(self.x_array, self.y_array)
         for i in range(len(x) // 4):
             x_spline = np.linspace(self.x_array[i], self.x_array[i + 1], 100)
             y_spline = x[4 * i] * x_spline ** 3 + x[4 * i + 1] * x_spline ** 2 + x[4 * i + 2] * x_spline + x[4 * i + 3]
-            axM.plot(x_spline, y_spline, color='orange')
+            axM.plot(x_spline, y_spline, color='purple')
         self.plot_frame_1.draw()
         self.plot_frame_2.draw()
         self.plot_frame_3.draw()
 
     def append_text_t1(self, text):
+        """
+        Appends first terminal with text.
+        :param text:
+        """
         self.my_terminal.append(text)
 
     def append_text_t2(self, text):
+        """
+        Appends second terminal with text.
+        :param text:
+        """
         self.numpy_terminal.append(text)
 
     def append_text_t3(self, text):
+        """
+        Appends third terminal with text.
+        :param text:
+        """
         self.scipy_terminal.append(text)
 
     def append_text_main(self, text):
+        """
+        Appends main console with text.
+        :param text:
+        """
         self.main_terminal.append(text)
 
     def append_all(self, text):
+        """
+        Appends all plot terminals with the same text parameter.
+        :param text:
+        """
         self.append_text_t1(text)
         self.append_text_t2(text)
         self.append_text_t3(text)
 
     def clear_t1(self):
+        """
+        Clears first plot terminal.
+        """
         self.my_terminal.clear()
 
     def clear_t2(self):
+        """
+        Clears second plot terminal.
+        """
         self.numpy_terminal.clear()
 
     def clear_t3(self):
+        """
+        Clears third plot terminal.
+        """
         self.scipy_terminal.clear()
 
     def clear_console(self):
+        """
+        Clears main console.
+        """
         self.main_terminal.clear()
 
     def clear_all(self):
+        """
+        Clears all terminals including the main console.
+        """
         self.clear_t1()
         self.clear_t2()
         self.clear_t3()
         self.main_terminal.clear()
 
     def save_as(self):
+        """
+        Save as method for saving each newly generated plot as .png files.
+        """
         file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         self.savedpath = file
         if file:
@@ -438,6 +545,11 @@ class main_frame(QMainWindow):
             self.main_terminal.append(f"Scipy plot saved to {Scipy_filename}")
 
     def save(self):
+        """
+        Save method for saving each newly generated plots as .png files. Tbh this method is no different than the
+        "save as", but im planning to rewirte it so that it enables the user to replace the existing .png files with
+        newly generated plots.
+        """
         if self.savedpath:
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             MN_filename = os.path.join(self.savedpath, f"MN_{timestamp}.png")
@@ -454,6 +566,11 @@ class main_frame(QMainWindow):
             self.save_as()
 
     def eventFilter(self, source, event):
+        """
+        Method for checking if the enter key has been pressed by the user. Handles console events.
+        :param source:
+        :param event:
+        """
         if event.type() == QEvent.KeyPress and event.key() == QtCore.Qt.Key_Return and source is self.main_terminal:
             text_line = self.main_terminal.toPlainText()
             self.console_handler.get_console_input(text_line)
